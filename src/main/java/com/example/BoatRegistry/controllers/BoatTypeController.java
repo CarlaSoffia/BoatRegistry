@@ -1,7 +1,11 @@
 package com.example.BoatRegistry.controllers;
 
 import com.example.BoatRegistry.services.BoatTypeService;
-import com.example.BoatRegistry.store.entities.BoatType;
+import com.example.BoatRegistry.store.dtos.BoatTypeResponseDto;
+import com.example.BoatRegistry.store.dtos.BoatTypeRequestDto;
+import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -15,27 +19,33 @@ public class BoatTypeController {
     }
 
     @GetMapping("/boatTypes")
-    public List<BoatType> getAll() {
-        return boatTypeService.getAll();
+    public ResponseEntity<List<BoatTypeResponseDto>> getAll() {
+        var boatTypes = boatTypeService.getAll();
+        return ResponseEntity.status(HttpStatus.OK).body(boatTypes);
     }
 
     @GetMapping("/boatTypes/{id}")
-    public BoatType getById(@PathVariable Long id) {
-        return boatTypeService.getById(id);
+    public ResponseEntity<BoatTypeResponseDto> getById(@PathVariable Long id) {
+        var boatType = boatTypeService.getById(id);
+        return ResponseEntity.status(HttpStatus.OK).body(boatType);
     }
 
     @PostMapping("/boatTypes")
-    public BoatType create(@RequestBody BoatType boatType) {
-        return boatTypeService.save(boatType);
+    public ResponseEntity<BoatTypeResponseDto> create(@Valid @RequestBody BoatTypeRequestDto boatType) {
+        var created = boatTypeService.save(boatType);
+        return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
     @PutMapping("boatTypes/{id}")
-    public BoatType update(@PathVariable Long id, @RequestBody BoatType boatType) {
-        return boatTypeService.update(id, boatType);
+    public ResponseEntity<BoatTypeResponseDto> update(@PathVariable Long id, @Valid @RequestBody BoatTypeRequestDto boatType) {
+        var updated = boatTypeService.update(id, boatType);
+        return ResponseEntity.status(HttpStatus.OK).body(updated);
     }
 
     @DeleteMapping("boatTypes/{id}")
-    public void delete(@PathVariable Long id) {
+    public ResponseEntity<BoatTypeResponseDto> delete(@PathVariable Long id) {
+        var boatType = boatTypeService.getById(id);
         boatTypeService.delete(id);
+        return ResponseEntity.status(HttpStatus.OK).body(boatType);
     }
 }
