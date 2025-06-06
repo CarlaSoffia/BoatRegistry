@@ -1,7 +1,7 @@
 package com.example.BoatRegistry.store.mappers;
 
-import com.example.BoatRegistry.store.dtos.BoatRequestDto;
-import com.example.BoatRegistry.store.dtos.BoatResponseDto;
+import com.example.BoatRegistry.store.dtos.boats.BoatCreateRequestDto;
+import com.example.BoatRegistry.store.dtos.boats.BoatResponseDto;
 import com.example.BoatRegistry.store.entities.Boat;
 import org.springframework.stereotype.Component;
 
@@ -38,7 +38,7 @@ public class BoatMapper {
         return boatResponseDtos;
     }
 
-    public Boat toEntity(BoatRequestDto requestDto) {
+    public Boat toEntity(BoatCreateRequestDto requestDto) {
         var boat = new Boat();
         boat.setName(requestDto.getName());
         boat.setDescription(requestDto.getDescription());

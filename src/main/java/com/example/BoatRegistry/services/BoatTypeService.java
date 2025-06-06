@@ -1,7 +1,7 @@
 package com.example.BoatRegistry.services;
 
-import com.example.BoatRegistry.store.dtos.BoatTypeRequestDto;
-import com.example.BoatRegistry.store.dtos.BoatTypeResponseDto;
+import com.example.BoatRegistry.store.dtos.boatTypes.BoatTypeRequestDto;
+import com.example.BoatRegistry.store.dtos.boatTypes.BoatTypeResponseDto;
 import com.example.BoatRegistry.store.mappers.BoatTypeMapper;
 import com.example.BoatRegistry.store.repositories.BoatTypeRepository;
 import jakarta.persistence.EntityNotFoundException;

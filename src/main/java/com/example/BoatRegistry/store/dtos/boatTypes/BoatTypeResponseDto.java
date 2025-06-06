@@ -1,4 +1,4 @@
-package com.example.BoatRegistry.store.dtos;
+package com.example.BoatRegistry.store.dtos.boatTypes;
 
 import lombok.Getter;
 import lombok.Setter;

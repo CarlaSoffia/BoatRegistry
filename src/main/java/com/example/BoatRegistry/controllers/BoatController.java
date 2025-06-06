@@ -1,8 +1,9 @@
 package com.example.BoatRegistry.controllers;
 
 import com.example.BoatRegistry.services.BoatService;
-import com.example.BoatRegistry.store.dtos.BoatRequestDto;
-import com.example.BoatRegistry.store.dtos.BoatResponseDto;
+import com.example.BoatRegistry.store.dtos.boats.BoatCreateRequestDto;
+import com.example.BoatRegistry.store.dtos.boats.BoatResponseDto;
+import com.example.BoatRegistry.store.dtos.boats.BoatUpdateRequestDto;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -30,15 +31,15 @@ public class BoatController {
     }
 
     @PostMapping("/boats")
-    public ResponseEntity<BoatResponseDto> create(@RequestBody BoatRequestDto boatRequestDto) {
-        var created = boatService.save(boatRequestDto);
+    public ResponseEntity<BoatResponseDto> create(@RequestBody BoatCreateRequestDto boatCreateRequestDto) {
+        var created = boatService.save(boatCreateRequestDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
     // TODO create update dto request different - cause in update its not mandatory to have every property!
     @PutMapping("/boats/{id}")
-    public ResponseEntity<BoatResponseDto> update(@PathVariable Long id, @RequestBody BoatRequestDto boatRequestDto) {
-        var updated = boatService.update(id, boatRequestDto);
+    public ResponseEntity<BoatResponseDto> update(@PathVariable Long id, @RequestBody BoatUpdateRequestDto boatUpdateRequestDto) {
+        var updated = boatService.update(id, boatUpdateRequestDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(updated);
     }
 

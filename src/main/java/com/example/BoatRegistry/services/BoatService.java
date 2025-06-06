@@ -1,17 +1,17 @@
 package com.example.BoatRegistry.services;
 
-import com.example.BoatRegistry.store.dtos.BoatRequestDto;
-import com.example.BoatRegistry.store.dtos.BoatResponseDto;
-import com.example.BoatRegistry.store.entities.Boat;
+import com.example.BoatRegistry.store.dtos.boats.BoatCreateRequestDto;
+import com.example.BoatRegistry.store.dtos.boats.BoatResponseDto;
+import com.example.BoatRegistry.store.dtos.boats.BoatUpdateRequestDto;
 import com.example.BoatRegistry.store.entities.BoatType;
 import com.example.BoatRegistry.store.mappers.BoatMapper;
-import com.example.BoatRegistry.store.mappers.BoatTypeMapper;
 import com.example.BoatRegistry.store.repositories.BoatRepository;
 import com.example.BoatRegistry.store.repositories.BoatTypeRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Objects;
 
 @Service
 public class BoatService {
@@ -43,15 +43,15 @@ public class BoatService {
         return boatMapper.toResponseDto(boat);
     }
 
-    public BoatResponseDto save(BoatRequestDto boatRequestDto){
-        var boat = boatMapper.toEntity(boatRequestDto);
-        var boatType = getBoatType(boatRequestDto);
+    public BoatResponseDto save(BoatCreateRequestDto boatCreateRequestDto){
+        var boat = boatMapper.toEntity(boatCreateRequestDto);
+        var boatType = getBoatType(boatCreateRequestDto.getBoatTypeId());
         boat.setBoatType(boatType);
         var insertedBoat = boatRepository.save(boat);
         return boatMapper.toResponseDto(insertedBoat);
     }
 
-    public BoatResponseDto update(Long id, BoatRequestDto boatRequestDto) {
+    public BoatResponseDto update(Long id, BoatUpdateRequestDto boatUpdateRequestDto) {
         var boatOptional = boatRepository.findById(id);
 
         if(boatOptional.isEmpty()){
@@ -59,16 +59,42 @@ public class BoatService {
         }
 
         var boat = boatOptional.get();
+        var updateName = !Objects.equals(boat.getName(), boatUpdateRequestDto.getName());
+        var updateDescription = !Objects.equals(boat.getDescription(), boatUpdateRequestDto.getDescription());
+        var updateLength = boat.getLengthInMeters() != boatUpdateRequestDto.getLengthInMeters();
+        var updateWidth = boat.getWidthInMeters() != boatUpdateRequestDto.getWidthInMeters();
+        var updateBuiltYear = boat.getBuiltYear() != boatUpdateRequestDto.getBuiltYear();
+        var updateBoatType = boat.getBoatType().getId() != boatUpdateRequestDto.getBoatTypeId();
 
-        boat.setName(boatRequestDto.getName());
-        boat.setDescription(boatRequestDto.getDescription());
-        boat.setLengthInMeters(boatRequestDto.getLengthInMeters());
-        boat.setWidthInMeters(boatRequestDto.getWidthInMeters());
-        boat.setBuiltYear(boatRequestDto.getBuiltYear());
-        var boatType = getBoatType(boatRequestDto);
-        boat.setBoatType(boatType);
+        if(updateName){
+            boat.setName(boatUpdateRequestDto.getName());
+        }
 
-        var updatedBoat = boatRepository.save(boat);
+        if(updateDescription){
+            boat.setDescription(boatUpdateRequestDto.getDescription());
+        }
+
+        if(updateLength){
+            boat.setLengthInMeters(boatUpdateRequestDto.getLengthInMeters());
+        }
+
+        if(updateWidth){
+            boat.setWidthInMeters(boatUpdateRequestDto.getWidthInMeters());
+        }
+
+        if(updateBuiltYear){
+            boat.setBuiltYear(boatUpdateRequestDto.getBuiltYear());
+        }
+
+        if(updateBoatType){
+            var boatType = getBoatType(boatUpdateRequestDto.getBoatTypeId());
+            boat.setBoatType(boatType);
+        }
+        var updatedBoat = boat;
+        if (updateName || updateDescription || updateLength || updateWidth|| updateBuiltYear || updateBoatType) {
+            updatedBoat = boatRepository.save(boat);
+        }
+        
         return boatMapper.toResponseDto(updatedBoat);
     }
 
@@ -83,8 +109,7 @@ public class BoatService {
         boatRepository.delete(boat);
     }
 
-    private BoatType getBoatType(BoatRequestDto boatRequestDto) {
-        var boatTypeId = boatRequestDto.getBoatTypeId();
+    private BoatType getBoatType(Long boatTypeId) {
         var boatTypeOptional = boatTypeRepository.findById(boatTypeId);
 
         if(boatTypeOptional.isEmpty()) {

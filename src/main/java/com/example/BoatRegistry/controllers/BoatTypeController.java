@@ -1,8 +1,8 @@
 package com.example.BoatRegistry.controllers;
 
 import com.example.BoatRegistry.services.BoatTypeService;
-import com.example.BoatRegistry.store.dtos.BoatTypeResponseDto;
-import com.example.BoatRegistry.store.dtos.BoatTypeRequestDto;
+import com.example.BoatRegistry.store.dtos.boatTypes.BoatTypeResponseDto;
+import com.example.BoatRegistry.store.dtos.boatTypes.BoatTypeRequestDto;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
