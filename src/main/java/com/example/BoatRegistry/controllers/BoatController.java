@@ -1,5 +1,6 @@
 package com.example.BoatRegistry.controllers;
 
+import com.example.BoatRegistry.dtos.boats.BoatImageRequestDto;
 import com.example.BoatRegistry.services.BoatService;
 import com.example.BoatRegistry.dtos.boats.BoatCreateRequestDto;
 import com.example.BoatRegistry.dtos.boats.BoatResponseDto;
@@ -55,8 +56,8 @@ public class BoatController {
     }
 
     @PutMapping("boats/{id}/upload/image")
-    public ResponseEntity<BoatResponseDto> submitImage(@PathVariable Long id, @Valid @RequestParam("image") MultipartFile image) {
-        var boat = boatService.uploadImage(id, image);
+    public ResponseEntity<BoatResponseDto> submitImage(@PathVariable Long id, @Valid BoatImageRequestDto boatImageRequestDto) {
+        var boat = boatService.uploadImage(id, boatImageRequestDto);
         return ResponseEntity.status(HttpStatus.OK).body(boat);
     }
 
