@@ -1,18 +1,16 @@
 package com.example.BoatRegistry.controllers;
 
-import com.example.BoatRegistry.dtos.boats.BoatImageRequestDto;
+import com.example.BoatRegistry.dtos.boatImages.BoatImageRequestDto;
 import com.example.BoatRegistry.services.BoatService;
 import com.example.BoatRegistry.dtos.boats.BoatCreateRequestDto;
 import com.example.BoatRegistry.dtos.boats.BoatResponseDto;
 import com.example.BoatRegistry.dtos.boats.BoatUpdateRequestDto;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -63,12 +61,11 @@ public class BoatController {
 
     @GetMapping("boats/{id}/image")
     public ResponseEntity<byte[]> getImage(@PathVariable Long id) {
-        var image = boatService.getImage(id);
-
+        var boatImageResponseDto = boatService.getImage(id);
+        var image = boatImageResponseDto.getImage();
         HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.IMAGE_JPEG); // Or IMAGE_PNG, etc.
+        headers.setContentType(MediaType.parseMediaType(boatImageResponseDto.getMedia_type()));
         headers.setContentLength(image.length);
-
         return new ResponseEntity<>(image, headers, HttpStatus.OK);
     }
 

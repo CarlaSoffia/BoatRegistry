@@ -1,18 +1,21 @@
 package com.example.BoatRegistry.services;
 
+import com.example.BoatRegistry.dtos.boatImages.BoatImageResponseDto;
 import com.example.BoatRegistry.dtos.boats.BoatCreateRequestDto;
+import com.example.BoatRegistry.dtos.boatImages.BoatImageRequestDto;
 import com.example.BoatRegistry.dtos.boats.BoatResponseDto;
 import com.example.BoatRegistry.dtos.boats.BoatUpdateRequestDto;
 import com.example.BoatRegistry.entities.BoatImage;
 import com.example.BoatRegistry.entities.BoatType;
 import com.example.BoatRegistry.exceptions.ImageUploadException;
+import com.example.BoatRegistry.mappers.BoatImageMapper;
 import com.example.BoatRegistry.mappers.BoatMapper;
 import com.example.BoatRegistry.repositories.BoatImageRepository;
 import com.example.BoatRegistry.repositories.BoatRepository;
 import com.example.BoatRegistry.repositories.BoatTypeRepository;
 import jakarta.persistence.EntityNotFoundException;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
@@ -24,16 +27,19 @@ public class BoatService {
     private final BoatTypeRepository boatTypeRepository;
     private final BoatImageRepository boatImageRepository;
     private final BoatMapper boatMapper;
+    private final BoatImageMapper boatImageMapper;
     private final String NotFoundMessage = "Boat with id %s not found";
     private final String NotFoundBoatTypeMessage = "Boat type with id %s not found";
     private final String NotFoundBoatImageMessage = "Boat with id %s does not have an image";
     private final String ErrorInUploadBoatImageMessage = "Error when uploading the image for boat with id %s";
+    private final String InvalidImageType = "Only JPEG and PNG image types are allowed";
 
-    public BoatService(BoatRepository boatRepository, BoatTypeRepository boatTypeRepository, BoatImageRepository boatImageRepository, BoatMapper boatMapper) {
+    public BoatService(BoatRepository boatRepository, BoatTypeRepository boatTypeRepository, BoatImageRepository boatImageRepository, BoatMapper boatMapper, BoatImageMapper boatImageMapper) {
         this.boatRepository = boatRepository;
         this.boatTypeRepository = boatTypeRepository;
         this.boatImageRepository = boatImageRepository;
         this.boatMapper = boatMapper;
+        this.boatImageMapper = boatImageMapper;
     }
 
     public List<BoatResponseDto> getAll(){
@@ -126,25 +132,32 @@ public class BoatService {
         boatRepository.delete(boat);
     }
 
-    public BoatResponseDto uploadImage(Long id, MultipartFile image) {
+    public BoatResponseDto uploadImage(Long id, BoatImageRequestDto boatImageRequestDto) {
+        var image = boatImageRequestDto.getImage();
+        var contentType = image.getContentType();
+        if (contentType == null ||
+                !(contentType.equals(MediaType.IMAGE_JPEG_VALUE) || contentType.equals(MediaType.IMAGE_PNG_VALUE))) {
+            throw new ImageUploadException(InvalidImageType, null);
+        }
 
         var boatOptional = boatRepository.findById(id);
         if(boatOptional.isEmpty()) {
             throw new EntityNotFoundException(String.format(NotFoundMessage, id));
         }
         var boat = boatOptional.get();
-        var boatImage = boat.getBoatImage();
-        if(boatImage == null){
-            boatImage = new BoatImage();
+        var previousImage = boat.getBoatImage();
+        if(previousImage != null){
+            boatImageRepository.delete(previousImage);
         }
+
         try {
-            boatImage.setImage(image.getBytes());
+            var boatImage = boatImageMapper.toEntity(boatImageRequestDto);
+            boatImageRepository.save(boatImage);
+            boat.setBoatImage(boatImage);
         } catch (IOException e) {
             throw new ImageUploadException(String.format(ErrorInUploadBoatImageMessage, id), e);
         }
-        boatImageRepository.save(boatImage);
 
-        boat.setBoatImage(boatImage);
         boatRepository.save(boat);
         return boatMapper.toResponseDto(boat);
     }
@@ -155,20 +168,21 @@ public class BoatService {
         if(boatOptional.isEmpty()) {
             throw new EntityNotFoundException(String.format(NotFoundMessage, id));
         }
+
         var boat = boatOptional.get();
+        var boatImage = boat.getBoatImage();
+        if(boatImage == null) {
+            throw new EntityNotFoundException(String.format(NotFoundBoatImageMessage, id));
+        }
 
         boat.setBoatImage(null);
         boatRepository.save(boat);
 
-        var boatImage = boat.getBoatImage();
-        if(boatImage != null){
-            boatImageRepository.delete(boatImage);
-        }
-
+        boatImageRepository.delete(boatImage);
         return boatMapper.toResponseDto(boat);
     }
 
-    public byte[] getImage(Long id) {
+    public BoatImageResponseDto getImage(Long id) {
         var boatOptional = boatRepository.findById(id);
 
         if(boatOptional.isEmpty()) {
@@ -181,7 +195,7 @@ public class BoatService {
             throw new EntityNotFoundException(String.format(NotFoundBoatImageMessage, id));
         }
 
-        return boatImage.getImage();
+        return boatImageMapper.toDto(boatImage);
     }
 
     private BoatType getBoatType(Long boatTypeId) {
