@@ -1,8 +1,8 @@
-package com.example.BoatRegistry.store.mappers;
+package com.example.BoatRegistry.mappers;
 
-import com.example.BoatRegistry.store.dtos.boatTypes.BoatTypeRequestDto;
-import com.example.BoatRegistry.store.dtos.boatTypes.BoatTypeResponseDto;
-import com.example.BoatRegistry.store.entities.BoatType;
+import com.example.BoatRegistry.dtos.boatTypes.BoatTypeRequestDto;
+import com.example.BoatRegistry.dtos.boatTypes.BoatTypeResponseDto;
+import com.example.BoatRegistry.entities.BoatType;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;

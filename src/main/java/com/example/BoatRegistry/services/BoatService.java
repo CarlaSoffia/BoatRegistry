@@ -1,15 +1,20 @@
 package com.example.BoatRegistry.services;
 
-import com.example.BoatRegistry.store.dtos.boats.BoatCreateRequestDto;
-import com.example.BoatRegistry.store.dtos.boats.BoatResponseDto;
-import com.example.BoatRegistry.store.dtos.boats.BoatUpdateRequestDto;
-import com.example.BoatRegistry.store.entities.BoatType;
-import com.example.BoatRegistry.store.mappers.BoatMapper;
-import com.example.BoatRegistry.store.repositories.BoatRepository;
-import com.example.BoatRegistry.store.repositories.BoatTypeRepository;
+import com.example.BoatRegistry.dtos.boats.BoatCreateRequestDto;
+import com.example.BoatRegistry.dtos.boats.BoatResponseDto;
+import com.example.BoatRegistry.dtos.boats.BoatUpdateRequestDto;
+import com.example.BoatRegistry.entities.BoatImage;
+import com.example.BoatRegistry.entities.BoatType;
+import com.example.BoatRegistry.exceptions.ImageUploadException;
+import com.example.BoatRegistry.mappers.BoatMapper;
+import com.example.BoatRegistry.repositories.BoatImageRepository;
+import com.example.BoatRegistry.repositories.BoatRepository;
+import com.example.BoatRegistry.repositories.BoatTypeRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
 
@@ -17,13 +22,17 @@ import java.util.Objects;
 public class BoatService {
     private final BoatRepository boatRepository;
     private final BoatTypeRepository boatTypeRepository;
+    private final BoatImageRepository boatImageRepository;
     private final BoatMapper boatMapper;
     private final String NotFoundMessage = "Boat with id %s not found";
     private final String NotFoundBoatTypeMessage = "Boat type with id %s not found";
+    private final String NotFoundBoatImageMessage = "Boat with id %s does not have an image";
+    private final String ErrorInUploadBoatImageMessage = "Error when uploading the image for boat with id %s";
 
-    public BoatService(BoatRepository boatRepository, BoatTypeRepository boatTypeRepository, BoatMapper boatMapper) {
+    public BoatService(BoatRepository boatRepository, BoatTypeRepository boatTypeRepository, BoatImageRepository boatImageRepository, BoatMapper boatMapper) {
         this.boatRepository = boatRepository;
         this.boatTypeRepository = boatTypeRepository;
+        this.boatImageRepository = boatImageRepository;
         this.boatMapper = boatMapper;
     }
 
@@ -59,12 +68,20 @@ public class BoatService {
         }
 
         var boat = boatOptional.get();
-        var updateName = !Objects.equals(boat.getName(), boatUpdateRequestDto.getName());
-        var updateDescription = !Objects.equals(boat.getDescription(), boatUpdateRequestDto.getDescription());
-        var updateLength = boat.getLengthInMeters() != boatUpdateRequestDto.getLengthInMeters();
-        var updateWidth = boat.getWidthInMeters() != boatUpdateRequestDto.getWidthInMeters();
-        var updateBuiltYear = boat.getBuiltYear() != boatUpdateRequestDto.getBuiltYear();
-        var updateBoatType = boat.getBoatType().getId() != boatUpdateRequestDto.getBoatTypeId();
+
+        var newName = boatUpdateRequestDto.getName();
+        var newDescription = boatUpdateRequestDto.getDescription();
+        var newLength = boatUpdateRequestDto.getLengthInMeters();
+        var newWidth = boatUpdateRequestDto.getWidthInMeters();
+        var newBuiltYear = boatUpdateRequestDto.getBuiltYear();
+        var newBoatType = boatUpdateRequestDto.getBoatTypeId();
+
+        var updateName = newName != null && !Objects.equals(boat.getName(), newName);
+        var updateDescription = newDescription != null && !Objects.equals(boat.getDescription(), newDescription);
+        var updateLength = newLength != null && boat.getLengthInMeters() != newLength;
+        var updateWidth = newWidth != null && boat.getWidthInMeters() != newWidth;
+        var updateBuiltYear = newBuiltYear != null && boat.getBuiltYear() != newBuiltYear;
+        var updateBoatType = newBoatType != null && boat.getBoatType().getId() != newBoatType;
 
         if(updateName){
             boat.setName(boatUpdateRequestDto.getName());
@@ -109,6 +126,64 @@ public class BoatService {
         boatRepository.delete(boat);
     }
 
+    public BoatResponseDto uploadImage(Long id, MultipartFile image) {
+
+        var boatOptional = boatRepository.findById(id);
+        if(boatOptional.isEmpty()) {
+            throw new EntityNotFoundException(String.format(NotFoundMessage, id));
+        }
+        var boat = boatOptional.get();
+        var boatImage = boat.getBoatImage();
+        if(boatImage == null){
+            boatImage = new BoatImage();
+        }
+        try {
+            boatImage.setImage(image.getBytes());
+        } catch (IOException e) {
+            throw new ImageUploadException(String.format(ErrorInUploadBoatImageMessage, id), e);
+        }
+        boatImageRepository.save(boatImage);
+
+        boat.setBoatImage(boatImage);
+        boatRepository.save(boat);
+        return boatMapper.toResponseDto(boat);
+    }
+
+
+    public BoatResponseDto deleteImage(Long id){
+        var boatOptional = boatRepository.findById(id);
+        if(boatOptional.isEmpty()) {
+            throw new EntityNotFoundException(String.format(NotFoundMessage, id));
+        }
+        var boat = boatOptional.get();
+
+        boat.setBoatImage(null);
+        boatRepository.save(boat);
+
+        var boatImage = boat.getBoatImage();
+        if(boatImage != null){
+            boatImageRepository.delete(boatImage);
+        }
+
+        return boatMapper.toResponseDto(boat);
+    }
+
+    public byte[] getImage(Long id) {
+        var boatOptional = boatRepository.findById(id);
+
+        if(boatOptional.isEmpty()) {
+            throw new EntityNotFoundException(String.format(NotFoundMessage, id));
+        }
+        var boat = boatOptional.get();
+        var boatImage = boat.getBoatImage();
+
+        if(boatImage == null) {
+            throw new EntityNotFoundException(String.format(NotFoundBoatImageMessage, id));
+        }
+
+        return boatImage.getImage();
+    }
+
     private BoatType getBoatType(Long boatTypeId) {
         var boatTypeOptional = boatTypeRepository.findById(boatTypeId);
 
@@ -117,5 +192,6 @@ public class BoatService {
         }
         return boatTypeOptional.get();
     }
+
 
 }

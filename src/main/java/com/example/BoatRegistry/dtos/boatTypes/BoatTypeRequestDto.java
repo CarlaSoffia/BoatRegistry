@@ -1,4 +1,4 @@
-package com.example.BoatRegistry.store.dtos.boatTypes;
+package com.example.BoatRegistry.dtos.boatTypes;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

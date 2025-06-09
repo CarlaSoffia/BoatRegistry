@@ -1,6 +1,6 @@
-package com.example.BoatRegistry.store.dtos.boats;
+package com.example.BoatRegistry.dtos.boats;
 
-import com.example.BoatRegistry.store.dtos.boatTypes.BoatTypeResponseDto;
+import com.example.BoatRegistry.dtos.boatTypes.BoatTypeResponseDto;
 import lombok.Getter;
 import lombok.Setter;
 

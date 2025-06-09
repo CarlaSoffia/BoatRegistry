@@ -1,4 +1,4 @@
-package com.example.BoatRegistry.store.entities;
+package com.example.BoatRegistry.entities;
 
 import jakarta.persistence.*;
 import lombok.Getter;

@@ -1,6 +1,7 @@
 package com.example.BoatRegistry.exceptions;
 
 import jakarta.persistence.EntityNotFoundException;
+import org.apache.tomcat.util.http.fileupload.FileUploadException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -27,5 +28,10 @@ public class GlobalExceptionHandler {
         });
 
         return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(ImageUploadException.class)
+    public ResponseEntity<String> handleImageUploadError(ImageUploadException ex){
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
     }
 }

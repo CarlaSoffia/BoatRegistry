@@ -1,4 +1,4 @@
-package com.example.BoatRegistry.store.entities;
+package com.example.BoatRegistry.entities;
 
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -35,4 +35,8 @@ public class Boat {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "boat_type_id", nullable = false)
     private BoatType boatType;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "boat_image_id")
+    private BoatImage boatImage;
 }
