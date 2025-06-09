@@ -1,5 +1,6 @@
 package com.example.BoatRegistry.dtos.boats;
 
+import com.example.BoatRegistry.validators.NotBlankIfPresent;
 import jakarta.validation.constraints.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -8,11 +9,12 @@ import lombok.Setter;
 @Setter
 public class BoatUpdateRequestDto {
 
-    @NotBlank(message = "Name cannot be blank")
+    @NotBlankIfPresent(message = "Name cannot not be blank if provided")
     @Size(max = 50, message = "Name can only have 50 characters")
     private String name;
 
-    @NotBlank(message = "Description cannot be blank")
+    @NotBlankIfPresent(message = "Description cannot not be blank if provided")
+    @Size(max = 255, message = "Name can only have 255 characters")
     private String description;
 
     @DecimalMin(value = "0.0", inclusive = false, message = "Length must be bigger than 0.0 meters")

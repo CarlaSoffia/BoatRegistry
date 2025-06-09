@@ -1,5 +1,7 @@
 package com.example.BoatRegistry.dtos.boats;
 
+import com.example.BoatRegistry.validators.NotBlankIfPresent;
+import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -13,7 +15,8 @@ public class BoatCreateRequestDto {
     @Size(max = 50, message = "Name can only have 50 characters")
     private String name;
 
-    @NotBlank(message = "Description cannot be blank")
+    @NotBlankIfPresent(message = "Description cannot not be blank if provided")
+    @Size(max = 255, message = "Name can only have 255 characters")
     private String description;
 
     @NotNull(message = "Length is required")
