@@ -4,6 +4,8 @@ import com.example.BoatRegistry.services.BoatService;
 import com.example.BoatRegistry.dtos.boats.BoatCreateRequestDto;
 import com.example.BoatRegistry.dtos.boats.BoatResponseDto;
 import com.example.BoatRegistry.dtos.boats.BoatUpdateRequestDto;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -34,13 +36,13 @@ public class BoatController {
     }
 
     @PostMapping("/boats")
-    public ResponseEntity<BoatResponseDto> create(@RequestBody BoatCreateRequestDto boatCreateRequestDto) {
+    public ResponseEntity<BoatResponseDto> create(@Valid @RequestBody BoatCreateRequestDto boatCreateRequestDto) {
         var created = boatService.save(boatCreateRequestDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
     @PutMapping("/boats/{id}")
-    public ResponseEntity<BoatResponseDto> update(@PathVariable Long id, @RequestBody BoatUpdateRequestDto boatUpdateRequestDto) {
+    public ResponseEntity<BoatResponseDto> update(@PathVariable Long id, @Valid @RequestBody BoatUpdateRequestDto boatUpdateRequestDto) {
         var updated = boatService.update(id, boatUpdateRequestDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(updated);
     }
@@ -53,7 +55,7 @@ public class BoatController {
     }
 
     @PutMapping("boats/{id}/upload/image")
-    public ResponseEntity<BoatResponseDto> submitImage(@PathVariable Long id, @RequestParam("image") MultipartFile image) {
+    public ResponseEntity<BoatResponseDto> submitImage(@PathVariable Long id, @Valid @RequestParam("image") MultipartFile image) {
         var boat = boatService.uploadImage(id, image);
         return ResponseEntity.status(HttpStatus.OK).body(boat);
     }
