@@ -14,7 +14,7 @@ public class BoatUpdateRequestDto {
     private String name;
 
     @NotBlankIfPresent(message = "Description cannot not be blank if provided")
-    @Size(max = 255, message = "Name can only have 255 characters")
+    @Size(max = 255, message = "Description can only have 255 characters")
     private String description;
 
     @DecimalMin(value = "0.0", inclusive = false, message = "Length must be bigger than 0.0 meters")

@@ -10,8 +10,7 @@ import lombok.Setter;
 @Setter
 public class BoatTypeRequestDto {
 
-    @NotNull(message = "Name is required")
-    @NotBlank(message = "Name cannot be blank")
+    @NotBlank(message = "Name is required and cannot be blank")
     @Size(max = 50, message = "Name can only have 50 characters")
     private String name;
 }
