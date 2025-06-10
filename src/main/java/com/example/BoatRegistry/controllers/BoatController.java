@@ -43,7 +43,7 @@ public class BoatController {
     @PutMapping("/boats/{id}")
     public ResponseEntity<BoatResponseDto> update(@PathVariable Long id, @Valid @RequestBody BoatUpdateRequestDto boatUpdateRequestDto) {
         var updated = boatService.update(id, boatUpdateRequestDto);
-        return ResponseEntity.status(HttpStatus.CREATED).body(updated);
+        return ResponseEntity.status(HttpStatus.OK).body(updated);
     }
 
     @DeleteMapping("/boats/{id}")
