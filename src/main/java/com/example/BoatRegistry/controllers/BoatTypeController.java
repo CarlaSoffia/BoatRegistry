@@ -36,13 +36,13 @@ public class BoatTypeController {
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
-    @PutMapping("boatTypes/{id}")
+    @PutMapping("/boatTypes/{id}")
     public ResponseEntity<BoatTypeResponseDto> update(@PathVariable Long id, @Valid @RequestBody BoatTypeRequestDto boatType) {
         var updated = boatTypeService.update(id, boatType);
         return ResponseEntity.status(HttpStatus.OK).body(updated);
     }
 
-    @DeleteMapping("boatTypes/{id}")
+    @DeleteMapping("/boatTypes/{id}")
     public ResponseEntity<BoatTypeResponseDto> delete(@PathVariable Long id) {
         var boatType = boatTypeService.getById(id);
         boatTypeService.delete(id);

@@ -53,13 +53,13 @@ public class BoatController {
         return ResponseEntity.status(HttpStatus.OK).body(boat);
     }
 
-    @PutMapping("boats/{id}/upload/image")
+    @PutMapping("/boats/{id}/upload/image")
     public ResponseEntity<BoatResponseDto> submitImage(@PathVariable Long id, @Valid BoatImageRequestDto boatImageRequestDto) {
         var boat = boatService.uploadImage(id, boatImageRequestDto);
         return ResponseEntity.status(HttpStatus.OK).body(boat);
     }
 
-    @GetMapping("boats/{id}/image")
+    @GetMapping("/boats/{id}/image")
     public ResponseEntity<byte[]> getImage(@PathVariable Long id) {
         var boatImageResponseDto = boatService.getImage(id);
         var image = boatImageResponseDto.getImage();
@@ -69,7 +69,7 @@ public class BoatController {
         return new ResponseEntity<>(image, headers, HttpStatus.OK);
     }
 
-    @DeleteMapping("boats/{id}/delete/image")
+    @DeleteMapping("/boats/{id}/delete/image")
     public ResponseEntity<BoatResponseDto> deleteImage(@PathVariable Long id) {
         var boat = boatService.deleteImage(id);
         return ResponseEntity.status(HttpStatus.OK).body(boat);

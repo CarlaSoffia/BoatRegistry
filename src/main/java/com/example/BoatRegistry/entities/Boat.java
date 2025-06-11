@@ -21,11 +21,9 @@ public class Boat {
     @Column(name = "description")
     private String description;
 
-    // TODO refactor to Double
     @Column(name = "length_in_meters", nullable = false)
     private Double lengthInMeters;
 
-    // TODO refactor to Double
     @Column(name = "width_in_meters", nullable = false)
     private Double widthInMeters;
 

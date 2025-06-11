@@ -82,12 +82,12 @@ public class BoatService {
         var newBuiltYear = boatUpdateRequestDto.getBuiltYear();
         var newBoatType = boatUpdateRequestDto.getBoatTypeId();
 
-        var updateName = newName != null && !Objects.equals(boat.getName(), newName);
-        var updateDescription = newDescription != null && !Objects.equals(boat.getDescription(), newDescription);
-        var updateLength = newLength != null && boat.getLengthInMeters() != newLength;
-        var updateWidth = newWidth != null && boat.getWidthInMeters() != newWidth;
-        var updateBuiltYear = newBuiltYear != null && boat.getBuiltYear() != newBuiltYear;
-        var updateBoatType = newBoatType != null && boat.getBoatType().getId() != newBoatType;
+        var updateName = newName != null && !newName.equals(boat.getName());
+        var updateDescription = newDescription != null && !newDescription.equals(boat.getDescription());
+        var updateLength = newLength != null && !newLength.equals(boat.getLengthInMeters());
+        var updateWidth = newWidth != null && !newWidth.equals(boat.getWidthInMeters());
+        var updateBuiltYear = newBuiltYear != null && !newBuiltYear.equals(boat.getBuiltYear());
+        var updateBoatType = newBoatType != null && !newBoatType.equals(boat.getBoatType().getId());
 
         if(updateName){
             boat.setName(boatUpdateRequestDto.getName());
