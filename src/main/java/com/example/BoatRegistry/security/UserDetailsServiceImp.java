@@ -1,6 +1,7 @@
 package com.example.BoatRegistry.security;
 
 import com.example.BoatRegistry.repositories.UserRepository;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -23,7 +24,7 @@ public class UserDetailsServiceImp implements UserDetailsService {
 
         var user = userOptional.get();
 
-        return org.springframework.security.core.userdetails.User.builder()
+        return User.builder()
                 .username(user.getEmail())
                 .password(user.getPassword())
                 .build();

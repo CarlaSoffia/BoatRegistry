@@ -15,6 +15,7 @@ import com.example.BoatRegistry.repositories.BoatRepository;
 import com.example.BoatRegistry.repositories.BoatTypeRepository;
 import com.example.BoatRegistry.repositories.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
@@ -51,6 +52,7 @@ public class BoatService {
     }
 
     public BoatResponseDto save(BoatCreateRequestDto boatCreateRequestDto, String userEmail){
+        validateIfBoatExistsWithName(userEmail, boatCreateRequestDto.getName());
         var boat = boatMapper.toEntity(boatCreateRequestDto);
         var userOptional = userRepository.findByEmail(userEmail);
         if(userOptional.isEmpty()) {
@@ -58,13 +60,14 @@ public class BoatService {
         }
         var user = userOptional.get();
         boat.setUser(user);
-        var boatType = getBoatType(boatCreateRequestDto.getBoatTypeId());
+        var boatType = getBoatType(boatCreateRequestDto.getBoatTypeId(), userEmail);
         boat.setBoatType(boatType);
         var insertedBoat = boatRepository.save(boat);
         return boatMapper.toResponseDto(insertedBoat);
     }
 
     public BoatResponseDto update(Long id, BoatUpdateRequestDto boatUpdateRequestDto, String userEmail) {
+        validateIfBoatExistsWithName(userEmail, boatUpdateRequestDto.getName());
         var boat = validateAccessToBoat(id, userEmail);
         var newName = boatUpdateRequestDto.getName();
         var newDescription = boatUpdateRequestDto.getDescription();
@@ -101,7 +104,7 @@ public class BoatService {
         }
 
         if(updateBoatType){
-            var boatType = getBoatType(boatUpdateRequestDto.getBoatTypeId());
+            var boatType = getBoatType(boatUpdateRequestDto.getBoatTypeId(), userEmail);
             boat.setBoatType(boatType);
         }
         var updatedBoat = boat;
@@ -115,6 +118,11 @@ public class BoatService {
     public BoatResponseDto delete(Long id, String userEmail) {
         var boat = validateAccessToBoat(id, userEmail);
         boatRepository.delete(boat);
+
+        var boatImage = boat.getBoatImage();
+        if(boatImage != null) {
+            boatImageRepository.delete(boatImage);
+        }
         return boatMapper.toResponseDto(boat);
     }
 
@@ -170,13 +178,19 @@ public class BoatService {
         return boatImageMapper.toDto(boatImage);
     }
 
-    private BoatType getBoatType(Long boatTypeId) {
+    private BoatType getBoatType(Long boatTypeId, String email) {
         var boatTypeOptional = boatTypeRepository.findById(boatTypeId);
 
         if(boatTypeOptional.isEmpty()) {
             throw new EntityNotFoundException(String.format("Boat type with id %s not found", boatTypeId));
         }
-        return boatTypeOptional.get();
+        var boatType = boatTypeOptional.get();
+
+        if(!boatType.getUser().getEmail().equals(email)){
+            throw new AccessDeniedException("You do not have permission to create a boat with this boat type");
+        }
+
+        return boatType;
     }
 
     private Boat validateAccessToBoat(Long id, String userEmail) {
@@ -191,5 +205,14 @@ public class BoatService {
             throw new AccessDeniedException("You do not have permission to access this boat");
         }
         return boat;
+    }
+
+    private void validateIfBoatExistsWithName(String userEmail, String boatName) {
+        var boats = boatRepository.findByUserEmail(userEmail);
+        for(Boat boat : boats) {
+            if(boat.getName().equals(boatName)) {
+                throw new DataIntegrityViolationException(String.format("A boat with name %s already exists", boatName));
+            }
+        }
     }
 }

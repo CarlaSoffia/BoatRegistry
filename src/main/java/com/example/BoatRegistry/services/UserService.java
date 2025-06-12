@@ -5,6 +5,9 @@ import com.example.BoatRegistry.dtos.users.UserResponseDto;
 import com.example.BoatRegistry.entities.BoatType;
 import com.example.BoatRegistry.entities.User;
 import com.example.BoatRegistry.mappers.UserMapper;
+import com.example.BoatRegistry.repositories.BoatImageRepository;
+import com.example.BoatRegistry.repositories.BoatRepository;
+import com.example.BoatRegistry.repositories.BoatTypeRepository;
 import com.example.BoatRegistry.repositories.UserRepository;
 
 import jakarta.persistence.EntityNotFoundException;
@@ -18,13 +21,19 @@ import org.springframework.stereotype.Service;
 public class UserService {
     private final UserMapper userMapper;
     private final UserRepository userRepository;
+    private final BoatRepository boatRepository;
+    private final BoatTypeRepository boatTypeRepository;
+    private final BoatImageRepository boatImageRepository;
     private final PasswordEncoder passwordEncoder;
     private final String NotFoundMessage = "User with %s %s not found";
 
-    public UserService(PasswordEncoder passwordEncoder, UserRepository userRepository, UserMapper userMapper) {
+    public UserService(PasswordEncoder passwordEncoder, UserRepository userRepository, UserMapper userMapper, BoatRepository boatRepository, BoatTypeRepository boatTypeRepository, BoatImageRepository boatImageRepository) {
         this.userRepository = userRepository;
         this.userMapper = userMapper;
         this.passwordEncoder = passwordEncoder;
+        this.boatRepository = boatRepository;
+        this.boatTypeRepository = boatTypeRepository;
+        this.boatImageRepository = boatImageRepository;
     }
 
     public UserResponseDto save(UserRequestDto userRequestDto) {
@@ -34,13 +43,13 @@ public class UserService {
         return userMapper.toResponseDto(insertedUser);
     }
 
-    public UserResponseDto getById(Long id, String email) {
-        var user = validateAccessToUser(id, email);
+    public UserResponseDto getById(String email) {
+        var user = getUserByEmail(email);
         return userMapper.toResponseDto(user);
     }
 
-    public UserResponseDto update(Long id, UserRequestDto userRequestDto, String email) {
-        var user = validateAccessToUser(id, email);
+    public UserResponseDto update(UserRequestDto userRequestDto, String email) {
+        var user = getUserByEmail(email);
 
         var newName = userRequestDto.getName();
         var newEmail = userRequestDto.getEmail();
@@ -68,8 +77,20 @@ public class UserService {
         return userMapper.toResponseDto(user);
     }
 
-    public UserResponseDto delete(Long id, String email) {
-        var user = validateAccessToUser(id, email);
+    public UserResponseDto delete(String email) {
+        var user = getUserByEmail(email);
+        var boats = boatRepository.findByUserEmail(email);
+        for(var boat : boats) {
+            var boatImage = boat.getBoatImage();
+            if(boatImage != null) {
+                boatImageRepository.delete(boatImage);
+            }
+        }
+        boatRepository.deleteAll(boats);
+
+        var boatTypes = boatTypeRepository.findByUserEmail(email);
+        boatTypeRepository.deleteAll(boatTypes);
+
         userRepository.delete(user);
         return userMapper.toResponseDto(user);
     }
@@ -83,17 +104,13 @@ public class UserService {
         }
     }
 
-    private User validateAccessToUser(Long id, String userEmail) {
-        var userOptional = userRepository.findById(id);
+    private User getUserByEmail(String userEmail) {
+        var userOptional = userRepository.findByEmail(userEmail);
 
         if(userOptional.isEmpty()) {
-            throw new EntityNotFoundException(String.format(NotFoundMessage, "id", id));
+            throw new EntityNotFoundException(String.format(NotFoundMessage,"email", userEmail));
         }
-        var user = userOptional.get();
 
-        if(!user.getEmail().equals(userEmail)) {
-            throw new AccessDeniedException("You do not have permission to access this user");
-        }
-        return user;
+        return userOptional.get();
     }
 }

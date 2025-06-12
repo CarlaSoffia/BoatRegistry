@@ -9,4 +9,6 @@ import java.util.List;
 @Repository
 public interface BoatRepository extends JpaRepository<Boat, Long> {
     List<Boat> findByUserEmail(String email);
+
+    List<Boat> findByBoatTypeId(Long id);
 }

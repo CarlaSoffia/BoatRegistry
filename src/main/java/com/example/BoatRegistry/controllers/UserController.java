@@ -16,11 +16,11 @@ public class UserController {
         this.userService = userService;
     }
 
-    @GetMapping("/users/{id}")
-    public ResponseEntity<UserResponseDto> getById(@PathVariable Long id) {
+    @GetMapping("/users/me")
+    public ResponseEntity<UserResponseDto> get() {
         var auth = SecurityContextHolder.getContext().getAuthentication();
         var email = auth.getName();
-        var user = userService.getById(id, email);
+        var user = userService.getById(email);
         return ResponseEntity.status(HttpStatus.OK).body(user);
     }
 
@@ -30,19 +30,19 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
-    @PutMapping("/users/{id}/update")
-    public ResponseEntity<UserResponseDto> update(@PathVariable Long id, @Valid @RequestBody UserRequestDto userRequestDto) {
+    @PutMapping("/users/update")
+    public ResponseEntity<UserResponseDto> update(@Valid @RequestBody UserRequestDto userRequestDto) {
         var auth = SecurityContextHolder.getContext().getAuthentication();
         var email = auth.getName();
-        var updated = userService.update(id, userRequestDto, email);
+        var updated = userService.update(userRequestDto, email);
         return ResponseEntity.status(HttpStatus.OK).body(updated);
     }
 
-    @DeleteMapping("/users/{id}/delete")
-    public ResponseEntity<UserResponseDto> deleteUser(@PathVariable Long id) {
+    @DeleteMapping("/users/delete")
+    public ResponseEntity<UserResponseDto> deleteUser() {
         var auth = SecurityContextHolder.getContext().getAuthentication();
         var email = auth.getName();
-        var user = userService.delete(id, email);
+        var user = userService.delete(email);
         return ResponseEntity.status(HttpStatus.OK).body(user);
     }
 }

@@ -30,13 +30,14 @@ public class Boat {
     @Column(name = "built_year", nullable = false)
     private Long builtYear;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "boat_type_id", nullable = false)
     private BoatType boatType;
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "boat_image_id")
     private BoatImage boatImage;
+
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;

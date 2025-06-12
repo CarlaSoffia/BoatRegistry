@@ -14,7 +14,7 @@ public class BoatType {
     @Column(name = "id")
     private Long id;
 
-    @Column(name = "name", nullable = false, length = 50, unique = true)
+    @Column(name = "name", nullable = false, length = 50)
     private String name;
 
     @ManyToOne
