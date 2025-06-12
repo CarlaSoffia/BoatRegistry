@@ -16,4 +16,8 @@ public class BoatType {
 
     @Column(name = "name", nullable = false, length = 50, unique = true)
     private String name;
+
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
 }

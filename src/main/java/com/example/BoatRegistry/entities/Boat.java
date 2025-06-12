@@ -18,7 +18,7 @@ public class Boat {
     @Column(name = "name", nullable = false, length = 50)
     private String name;
 
-    @Column(name = "description")
+    @Column(name = "description", nullable = false)
     private String description;
 
     @Column(name = "length_in_meters", nullable = false)
@@ -37,4 +37,7 @@ public class Boat {
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "boat_image_id")
     private BoatImage boatImage;
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
 }
