@@ -6,6 +6,7 @@ import com.example.BoatRegistry.dtos.boatImages.BoatImageRequestDto;
 import com.example.BoatRegistry.dtos.boats.BoatResponseDto;
 import com.example.BoatRegistry.dtos.boats.BoatUpdateRequestDto;
 import com.example.BoatRegistry.entities.Boat;
+import com.example.BoatRegistry.entities.BoatImage;
 import com.example.BoatRegistry.entities.BoatType;
 import com.example.BoatRegistry.exceptions.ImageUploadException;
 import com.example.BoatRegistry.mappers.BoatImageMapper;
@@ -136,19 +137,21 @@ public class BoatService {
         }
 
         var previousImage = boat.getBoatImage();
-        if(previousImage != null){
-            boatImageRepository.delete(previousImage);
-        }
-
+        BoatImage boatImage;
         try {
-            var boatImage = boatImageMapper.toEntity(boatImageRequestDto);
-            boatImageRepository.save(boatImage);
-            boat.setBoatImage(boatImage);
+            boatImage = boatImageMapper.toEntity(boatImageRequestDto);
+
         } catch (IOException e) {
             throw new ImageUploadException(String.format("Error when uploading the image for boat with id %s", id), e);
         }
 
+        boatImageRepository.save(boatImage);
+        boat.setBoatImage(boatImage);
         boatRepository.save(boat);
+
+        if(previousImage != null){
+            boatImageRepository.delete(previousImage);
+        }
         return boatMapper.toResponseDto(boat);
     }
 
