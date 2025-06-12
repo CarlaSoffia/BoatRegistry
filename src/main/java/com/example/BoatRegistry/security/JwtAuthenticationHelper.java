@@ -1,15 +1,15 @@
 package com.example.BoatRegistry.security;
 
-import com.example.BoatRegistry.services.UserDetailsServiceImp;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.lang.NonNull;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -27,15 +27,15 @@ public class JwtAuthenticationHelper extends OncePerRequestFilter {
     }
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+    protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain filterChain)
             throws ServletException, IOException {
         try {
             String authHeader = request.getHeader("Authorization");
             String token = null;
-            String username = null;
-            if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            String email = null;
+            if (authHeader != null && authHeader.startsWith("Bearer")) {
                 token = authHeader.substring(7);
-                username = jwtHelper.extractUsername(token);
+                email = jwtHelper.getEmail(token);
             }
 
             if (token == null) {
@@ -43,11 +43,12 @@ public class JwtAuthenticationHelper extends OncePerRequestFilter {
                 return;
             }
 
-            if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-                UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+            if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                UserDetails userDetails = userDetailsService.loadUserByUsername(email);
                 if (jwtHelper.validateToken(token, userDetails)) {
-                    UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(userDetails, null, null);
-                    authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    var authenticationToken = new UsernamePasswordAuthenticationToken(userDetails, null, null);
+                    var webAuthenticationDetails = new WebAuthenticationDetailsSource().buildDetails(request);
+                    authenticationToken.setDetails(webAuthenticationDetails);
                     SecurityContextHolder.getContext().setAuthentication(authenticationToken);
                 }
             }
@@ -55,6 +56,9 @@ public class JwtAuthenticationHelper extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
         } catch (AccessDeniedException e) {
             response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            response.getWriter().write(e.getMessage());
+        } catch (UsernameNotFoundException e) {
+            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
             response.getWriter().write(e.getMessage());
         }
     }

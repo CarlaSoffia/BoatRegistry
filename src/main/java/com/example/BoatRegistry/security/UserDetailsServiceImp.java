@@ -1,4 +1,4 @@
-package com.example.BoatRegistry.services;
+package com.example.BoatRegistry.security;
 
 import com.example.BoatRegistry.repositories.UserRepository;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -17,9 +17,11 @@ public class UserDetailsServiceImp implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         var userOptional = repository.findByEmail(email);
-        var user = userOptional.orElseThrow(() ->
-                new UsernameNotFoundException(String.format("User does not exist, email: %s", email))
-        );
+        if(userOptional.isEmpty()) {
+            throw new UsernameNotFoundException(String.format("User with email: %s does not exist", email));
+        }
+
+        var user = userOptional.get();
 
         return org.springframework.security.core.userdetails.User.builder()
                 .username(user.getEmail())

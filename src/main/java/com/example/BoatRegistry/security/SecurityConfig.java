@@ -1,6 +1,5 @@
 package com.example.BoatRegistry.security;
 
-import com.example.BoatRegistry.services.UserDetailsServiceImp;
 import com.example.BoatRegistry.services.UserService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -15,14 +14,12 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-import java.util.Arrays;
-
 @Configuration
 public class SecurityConfig {
-    private final UserDetailsServiceImp userDetailsServiceImp;
+    private final UserDetailsServiceImp userDetailsService;
     private final JwtAuthenticationHelper jwtAuthenticationHelper;
-    public SecurityConfig(UserDetailsServiceImp userDetailsServiceImp, JwtAuthenticationHelper jwtAuthenticationHelper) {
-        this.userDetailsServiceImp = userDetailsServiceImp;
+    public SecurityConfig(UserDetailsServiceImp userDetailsService, JwtAuthenticationHelper jwtAuthenticationHelper) {
+        this.userDetailsService = userDetailsService;
         this.jwtAuthenticationHelper = jwtAuthenticationHelper;
     }
 
@@ -34,7 +31,7 @@ public class SecurityConfig {
     @Bean
     public AuthenticationManager authenticationManager(HttpSecurity http) throws Exception {
         AuthenticationManagerBuilder authenticationManagerBuilder = http.getSharedObject(AuthenticationManagerBuilder.class);
-        authenticationManagerBuilder.userDetailsService(userDetailsServiceImp).passwordEncoder(passwordEncoder());
+        authenticationManagerBuilder.userDetailsService(userDetailsService).passwordEncoder(passwordEncoder());
         return authenticationManagerBuilder.build();
     }
     @Bean
@@ -48,10 +45,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/login").permitAll()
                         .anyRequest().authenticated())
                 .authenticationManager(authenticationManager)
-                //        Add JWT token filter
                 .addFilterBefore(jwtAuthenticationHelper, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
-
-
 }

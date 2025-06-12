@@ -2,9 +2,12 @@ package com.example.BoatRegistry.services;
 
 import com.example.BoatRegistry.dtos.boatTypes.BoatTypeRequestDto;
 import com.example.BoatRegistry.dtos.boatTypes.BoatTypeResponseDto;
+import com.example.BoatRegistry.entities.BoatType;
 import com.example.BoatRegistry.mappers.BoatTypeMapper;
 import com.example.BoatRegistry.repositories.BoatTypeRepository;
+import com.example.BoatRegistry.repositories.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -14,54 +17,59 @@ public class BoatTypeService {
 
     private final BoatTypeRepository boatTypeRepository;
     private final BoatTypeMapper boatTypeMapper;
-    private final String NotFoundMessage = "Boat type with id %s not found";
+    private final UserRepository userRepository;
 
-    public BoatTypeService(BoatTypeRepository boatTypeRepository, BoatTypeMapper boatTypeMapper) {
+    public BoatTypeService(BoatTypeRepository boatTypeRepository, BoatTypeMapper boatTypeMapper, UserRepository userRepository) {
         this.boatTypeRepository = boatTypeRepository;
         this.boatTypeMapper = boatTypeMapper;
+        this.userRepository = userRepository;
     }
 
-    public List<BoatTypeResponseDto> getAll() {
-       var boatTypes = boatTypeRepository.findAll();
+    public List<BoatTypeResponseDto> getAllByUser(String userEmail) {
+       var boatTypes = boatTypeRepository.findByUserEmail(userEmail);
        return boatTypeMapper.toResponseDtoList(boatTypes);
     }
 
-    public BoatTypeResponseDto getById(Long id) {
-       var boatTypeOptional = boatTypeRepository.findById(id);
-
-       if(boatTypeOptional.isEmpty()) {
-           throw new EntityNotFoundException(String.format(NotFoundMessage, id));
-       }
-
-       var boatType = boatTypeOptional.get();
-       return boatTypeMapper.toResponseDto(boatType);
+    public BoatTypeResponseDto getById(Long id, String userEmail) {
+        var boatType = validateAccessToBoatType(id, userEmail);
+        return boatTypeMapper.toResponseDto(boatType);
     }
 
-    public BoatTypeResponseDto save(BoatTypeRequestDto boatTypeRequestDto) {
+    public BoatTypeResponseDto save(BoatTypeRequestDto boatTypeRequestDto, String userEmail) {
         var boatTypeToInsert = boatTypeMapper.toEntity(boatTypeRequestDto);
+        var userOptional = userRepository.findByEmail(userEmail);
+        if(userOptional.isEmpty()) {
+            throw new EntityNotFoundException(String.format("User with email %s not found", userEmail));
+        }
+        var user = userOptional.get();
+        boatTypeToInsert.setUser(user);
         var insertedBoatType =  boatTypeRepository.save(boatTypeToInsert);
         return boatTypeMapper.toResponseDto(insertedBoatType);
     }
 
-    public BoatTypeResponseDto update(Long id, BoatTypeRequestDto boatTypeRequestDto) {
-        var boatTypeOptional = boatTypeRepository.findById(id);
-
-        if(boatTypeOptional.isEmpty()) {
-            throw new EntityNotFoundException(String.format(NotFoundMessage, id));
-        }
-        var boatType = boatTypeOptional.get();
+    public BoatTypeResponseDto update(Long id, BoatTypeRequestDto boatTypeRequestDto, String userEmail) {
+        var boatType = validateAccessToBoatType(id, userEmail);
         boatType.setName(boatTypeRequestDto.getName());
         var updatedBoatType = boatTypeRepository.save(boatType);
         return boatTypeMapper.toResponseDto(updatedBoatType);
     }
 
-    public void delete(Long id) {
-        var boatTypeOptional = boatTypeRepository.findById(id);
+    public BoatTypeResponseDto delete(Long id, String userEmail) {
+        var boatType = validateAccessToBoatType(id, userEmail);
+        boatTypeRepository.delete(boatType);
+        return boatTypeMapper.toResponseDto(boatType);
+    }
 
+    private BoatType validateAccessToBoatType(Long id, String userEmail) {
+        var boatTypeOptional = boatTypeRepository.findById(id);
         if(boatTypeOptional.isEmpty()) {
-            throw new EntityNotFoundException(String.format(NotFoundMessage, id));
+            throw new EntityNotFoundException(String.format("Boat type with id %s not found", id));
         }
         var boatType = boatTypeOptional.get();
-        boatTypeRepository.delete(boatType);
+
+        if(!boatType.getUser().getEmail().equals(userEmail)) {
+            throw new AccessDeniedException("You do not have permission to access this boat type");
+        }
+        return boatType;
     }
 }
