@@ -85,27 +85,27 @@ public class BoatService {
         var updateBoatType = newBoatType != null && !newBoatType.equals(boat.getBoatType().getId());
 
         if(updateName){
-            boat.setName(boatUpdateRequestDto.getName());
+            boat.setName(newName);
         }
 
         if(updateDescription){
-            boat.setDescription(boatUpdateRequestDto.getDescription());
+            boat.setDescription(newDescription);
         }
 
         if(updateLength){
-            boat.setLengthInMeters(boatUpdateRequestDto.getLengthInMeters());
+            boat.setLengthInMeters(newLength);
         }
 
         if(updateWidth){
-            boat.setWidthInMeters(boatUpdateRequestDto.getWidthInMeters());
+            boat.setWidthInMeters(newWidth);
         }
 
         if(updateBuiltYear){
-            boat.setBuiltYear(boatUpdateRequestDto.getBuiltYear());
+            boat.setBuiltYear(newBuiltYear);
         }
 
         if(updateBoatType){
-            var boatType = getBoatType(boatUpdateRequestDto.getBoatTypeId(), userEmail);
+            var boatType = getBoatType(newBoatType, userEmail);
             boat.setBoatType(boatType);
         }
         var updatedBoat = boat;

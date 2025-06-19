@@ -61,8 +61,12 @@ public class BoatTypeService {
         validateIfBoatTypeExistsWithName(userEmail, boatTypeRequestDto.getName());
 
         var boatType = validateAccessToBoatType(id, userEmail);
-        boatType.setName(boatTypeRequestDto.getName());
-        var updatedBoatType = boatTypeRepository.save(boatType);
+        var newName = boatTypeRequestDto.getName();
+        var updatedBoatType = boatType;
+        if(!newName.equals(boatType.getName())) {
+            boatType.setName(boatTypeRequestDto.getName());
+            updatedBoatType = boatTypeRepository.save(boatType);
+        }
         return boatTypeMapper.toResponseDto(updatedBoatType);
     }
 
