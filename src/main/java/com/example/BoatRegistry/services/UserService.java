@@ -1,7 +1,8 @@
 package com.example.BoatRegistry.services;
 
-import com.example.BoatRegistry.dtos.users.UserRequestDto;
+import com.example.BoatRegistry.dtos.users.UserCreateRequestDto;
 import com.example.BoatRegistry.dtos.users.UserResponseDto;
+import com.example.BoatRegistry.dtos.users.UserUpdateRequestDto;
 import com.example.BoatRegistry.entities.BoatType;
 import com.example.BoatRegistry.entities.User;
 import com.example.BoatRegistry.mappers.UserMapper;
@@ -11,9 +12,7 @@ import com.example.BoatRegistry.repositories.BoatTypeRepository;
 import com.example.BoatRegistry.repositories.UserRepository;
 
 import jakarta.persistence.EntityNotFoundException;
-import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -36,7 +35,8 @@ public class UserService {
         this.boatImageRepository = boatImageRepository;
     }
 
-    public UserResponseDto save(UserRequestDto userRequestDto) {
+    public UserResponseDto save(UserCreateRequestDto userRequestDto) {
+        validateIfUserExistsWithEmail(userRequestDto.getEmail());
         var userToInsert = userMapper.toEntity(userRequestDto);
         userToInsert.setPassword(passwordEncoder.encode(userRequestDto.getPassword()));
         var insertedUser =  userRepository.save(userToInsert);
@@ -48,7 +48,7 @@ public class UserService {
         return userMapper.toResponseDto(user);
     }
 
-    public UserResponseDto update(UserRequestDto userRequestDto, String email) {
+    public UserResponseDto update(UserUpdateRequestDto userRequestDto, String email) {
         var user = getUserByEmail(email);
 
         var newName = userRequestDto.getName();
@@ -64,6 +64,7 @@ public class UserService {
         }
 
         if (updateEmail) {
+            validateIfUserExistsWithEmail(newEmail);
             user.setEmail(newEmail);
         }
 
@@ -112,5 +113,13 @@ public class UserService {
         }
 
         return userOptional.get();
+    }
+
+    private void validateIfUserExistsWithEmail(String userEmail) {
+        var userOptional = userRepository.findByEmail(userEmail);
+        if(userOptional.isPresent()) {
+            throw new DataIntegrityViolationException(String.format("A user with email %s already exists", userEmail));
+        }
+
     }
 }

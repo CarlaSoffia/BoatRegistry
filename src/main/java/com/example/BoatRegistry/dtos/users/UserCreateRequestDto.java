@@ -8,7 +8,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class UserRequestDto {
+public class UserCreateRequestDto {
     @NotBlank(message = "Name is required and cannot be blank")
     @Size(max = 50, message = "Name can only have 50 characters")
     private String name;

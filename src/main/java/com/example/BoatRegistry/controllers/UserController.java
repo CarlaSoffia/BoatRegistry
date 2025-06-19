@@ -1,7 +1,8 @@
 package com.example.BoatRegistry.controllers;
 
-import com.example.BoatRegistry.dtos.users.UserRequestDto;
+import com.example.BoatRegistry.dtos.users.UserCreateRequestDto;
 import com.example.BoatRegistry.dtos.users.UserResponseDto;
+import com.example.BoatRegistry.dtos.users.UserUpdateRequestDto;
 import com.example.BoatRegistry.services.UserService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -25,13 +26,13 @@ public class UserController {
     }
 
     @PostMapping("/users/register")
-    public ResponseEntity<UserResponseDto> register(@Valid @RequestBody UserRequestDto userRequestDto) {
+    public ResponseEntity<UserResponseDto> register(@Valid @RequestBody UserCreateRequestDto userRequestDto) {
         var created = userService.save(userRequestDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
     @PutMapping("/users/update")
-    public ResponseEntity<UserResponseDto> update(@Valid @RequestBody UserRequestDto userRequestDto) {
+    public ResponseEntity<UserResponseDto> update(@Valid @RequestBody UserUpdateRequestDto userRequestDto) {
         var auth = SecurityContextHolder.getContext().getAuthentication();
         var email = auth.getName();
         var updated = userService.update(userRequestDto, email);

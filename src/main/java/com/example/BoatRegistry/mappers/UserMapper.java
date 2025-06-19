@@ -1,6 +1,6 @@
 package com.example.BoatRegistry.mappers;
 
-import com.example.BoatRegistry.dtos.users.UserRequestDto;
+import com.example.BoatRegistry.dtos.users.UserCreateRequestDto;
 import com.example.BoatRegistry.dtos.users.UserResponseDto;
 import com.example.BoatRegistry.entities.User;
 import org.springframework.stereotype.Component;
@@ -15,7 +15,7 @@ public class UserMapper {
         return userResponseDto;
     }
 
-    public User toEntity(UserRequestDto userRequestDto) {
+    public User toEntity(UserCreateRequestDto userRequestDto) {
         User user = new User();
         user.setName(userRequestDto.getName());
         user.setEmail(userRequestDto.getEmail());
